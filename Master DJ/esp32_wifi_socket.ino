@@ -5,8 +5,8 @@ TaskHandle_t Task2;
 
 WiFiClient localClient;
 
-const char* ssid = "IZZI-B204";
-const char* password = "eacyPzrxHG74Zrkdbb";
+const char* ssid = "Wi-Fi IPN";
+const char* password = "";
 
 const uint port = 4062;
 const char* ip = "3.149.222.108";
