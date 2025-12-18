@@ -186,7 +186,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if cancion.portada:
             pixmap = QPixmap()
             pixmap.loadFromData(cancion.portada)
-            self.Portada.setPixmap(pixmap.scaled(1080, 1080))
+            w = pixmap.width()
+            h = pixmap.height()
+            lado = min(w, h)
+
+            x = (w - lado) // 2
+            y = (h - lado) // 2
+
+            pixmap_cortado = pixmap.copy(x, y, lado, lado)
+            pixmap_final = pixmap_cortado.scaled(
+                1080, 1080,
+                Qt.KeepAspectRatio,
+                Qt.SmoothTransformation
+            )
+
+            self.Portada.setPixmap(pixmap_final)
         else:
             self.Portada.setPixmap(QPixmap(":/Imagenes/Imagenes/Base.png").scaled(1080, 1080))  # Vacío
     
