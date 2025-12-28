@@ -11,7 +11,7 @@ PORT = 4062
 BUFFER_SIZE = 1024
 
 CAMERA_INDEX = 0
-SEND_DELAY = 0.02   # 50 Hz aprox
+SEND_DELAY = 0.05   # 50 Hz aprox
 
 # ============================================
 
@@ -34,8 +34,8 @@ cap = cv2.VideoCapture(CAMERA_INDEX)
 
 # ---------- Estados ----------
 pot_value = 0
-ejeX = 2048
-ejeY = 2048
+ejeX = 2047
+ejeY = 2047
 
 reproducir =0
 pausa = 0
@@ -43,6 +43,13 @@ adelante = 0
 atras = 0
 boton = 0
 detener = 0
+
+prev_reproducir = 0
+prev_pausa = 0
+prev_adelante = 0
+prev_atras = 0
+prev_boton = 0
+prev_detener = 0
 
 cursor_activo = False
 ref_x = 0
@@ -143,10 +150,22 @@ try:
                 detener = 1
 
             # -------- Volumen (pellizco) --------
-            if right_fingers[0] == 1 and right_fingers[1] == 1:
-                d = pinch_distance(lm_right)
-                pot_value = int(np.interp(d, [0.05, 0.15], [0, 4095]))
-                pot_value = max(0, min(4095, pot_value))
+            if lm_right:
+
+                pinch = pinch_distance(lm_right)
+
+                palm = math.hypot(
+                    lm_right[0].x - lm_right[12].x,
+                    lm_right[0].y - lm_right[12].y
+                )
+
+                if palm > 0:
+                    ratio = pinch / palm
+
+                    # SOLO cuando realmente hay pellizco
+                    if ratio < 0.6:
+                        pot_value = int(np.interp(ratio, [0.05, 0.6], [0, 4095]))
+                        pot_value = max(0, min(4095, pot_value))
 
             # -------- Cursor relativo --------
             if right_fingers == [0,1,0,0,0]:
@@ -184,12 +203,30 @@ try:
         send(f"<pot>{pot_value}\n")
         send(f"<ejeX>{ejeX}\n")
         send(f"<ejeY>{ejeY}\n")
-        send(f"<reproducir>{reproducir}\n")
-        send(f"<pausa>{pausa}\n")
-        send(f"<adelante>{adelante}\n")
-        send(f"<atras>{atras}\n")
-        send(f"<boton>{boton}\n")
-        send(f"<detener>{detener}\n")
+        
+        if reproducir != prev_reproducir:
+            send(f"<reproducir>{reproducir}\n")
+            prev_reproducir = reproducir
+
+        if pausa != prev_pausa:
+            send(f"<pausa>{pausa}\n")
+            prev_pausa = pausa
+
+        if adelante != prev_adelante:
+            send(f"<adelante>{adelante}\n")
+            prev_adelante = adelante
+
+        if atras != prev_atras:
+            send(f"<atras>{atras}\n")
+            prev_atras = atras
+
+        if boton != prev_boton:
+            send(f"<boton>{boton}\n")
+            prev_boton = boton
+
+        if detener != prev_detener:
+            send(f"<detener>{detener}\n")
+            prev_detener = detener
 
 
         cv2.imshow("Gesture Sender", frame)
